@@ -14,25 +14,48 @@ populateTextarea();
 
 refs.form.addEventListener('input', throttle(onTextareaInput, 500));
 
-refs.form.addEventListener('submit', e => {
-  e.preventDefault();
-  e.currentTarget.reset();
-  const objData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  localStorage.removeItem(STORAGE_KEY);
-});
+refs.form.addEventListener('submit', onFormSubmit);
 
-function onTextareaInput(e) {
-  formData[e.target.name] = e.target.value;
-  const stringifiedData = JSON.stringify(formData);
-  localStorage.setItem(STORAGE_KEY, stringifiedData);
+function onFormSubmit(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const finalData = {};
+  for(const [key, value] of formData.entries()){
+  if (!value) {
+      alert("Все поля должны быть заполнены!");
+      return;
+  }
+      finalData[key] = value;
+  }
+  console.log(finalData);
+  form.reset();
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+function onTextareaInput(event) {
+  const { name, value } = event.target;
+  const parsedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if (parsedData) {
+      const formData = {
+      ...parsedData,
+      [name] : value,    
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData))
+      } else {
+      const formData = {[name] : value, 
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData))
+  }
 }
 
 function populateTextarea() {
-  const savedMessage = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
-  if (savedMessage === null) {
-    return;
+  const parsedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if (parsedData) {
+      const inputNames = Object.keys(parsedData);
+  inputNames.forEach(inputName => {
+      const input = refs.form.elements[inputName];
+      input.value = parsedData[inputName];
+  });
   }
-  refs.textarea.value = savedMessage['message'] || '';
-  refs.input.value = savedMessage['email'] || '';
 }

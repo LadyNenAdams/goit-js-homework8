@@ -5,6 +5,7 @@ import { throttle } from 'lodash';
 const TIME_KEY = 'videoplayer-current-time';
 const iframe = document.querySelector('iframe');
 const player = new Vimeo.Player(iframe);
+const JSON_PARSE = JSON.parse(localStorage.getItem(TIME_KEY));
 
 const onPlay = function (data) {
   const strigifyData = JSON.stringify(data);
@@ -13,10 +14,10 @@ const onPlay = function (data) {
 player.on('timeupdate', throttle(onPlay, 1000));
 
 function resumePlayback() {
-  if (JSON.parse(localStorage.getItem(TIME_KEY)) === null) {
+  if (JSON_PARSE === null) {
     return;
   }
-  const paused = JSON.parse(localStorage.getItem(TIME_KEY))['seconds'];
+  const paused = JSON_PARSE['seconds'];
   if (paused) {
     player
       .setCurrentTime(paused)
